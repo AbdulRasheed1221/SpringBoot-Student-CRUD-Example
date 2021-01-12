@@ -1,0 +1,74 @@
+package com.wipro.Application.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sun.el.stream.Optional;
+import com.wipro.Application.exception.ResourceNotFoundException;
+import com.wipro.Application.model.Student;
+import com.wipro.Application.repository.StudentRepository;
+
+@Service
+public class StudentService {
+     
+    @Autowired
+    StudentRepository studentrepository;
+     
+    public List<Student> getAllStudents()
+    {
+        List<Student> employeeList = studentrepository.findAll();
+         
+        if(employeeList.size() > 0) {
+            return employeeList;
+        } else {
+            return new ArrayList<Student>();
+        }
+    }
+     
+    public Student getEmployeeById(Integer id) throws ResourceNotFoundException 
+    {
+        java.util.Optional<Student> employee = studentrepository.findById(id);
+         
+        if(employee.isPresent()) {
+            return employee.get();
+        } else {
+            throw new ResourceNotFoundException("No employee record exist for given id");
+        }
+    }
+     
+    public EmployeeEntity createOrUpdateEmployee(EmployeeEntity entity) throws RecordNotFoundException 
+    {
+        Optional<EmployeeEntity> employee = repository.findById(entity.getId());
+         
+        if(employee.isPresent()) 
+        {
+            EmployeeEntity newEntity = employee.get();
+            newEntity.setEmail(entity.getEmail());
+            newEntity.setFirstName(entity.getFirstName());
+            newEntity.setLastName(entity.getLastName());
+ 
+            newEntity = repository.save(newEntity);
+             
+            return newEntity;
+        } else {
+            entity = repository.save(entity);
+             
+            return entity;
+        }
+    } 
+     
+    public void deleteEmployeeById(Long id) throws RecordNotFoundException 
+    {
+        Optional<EmployeeEntity> employee = repository.findById(id);
+         
+        if(employee.isPresent()) 
+        {
+            repository.deleteById(id);
+        } else {
+            throw new RecordNotFoundException("No employee record exist for given id");
+        }
+    } 
+}

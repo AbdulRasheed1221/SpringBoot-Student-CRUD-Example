@@ -1,0 +1,68 @@
+package com.wipro.Application.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sun.el.stream.Optional;
+import com.wipro.Application.exception.ResourceNotFoundException;
+import com.wipro.Application.model.Student;
+import com.wipro.Application.repository.StudentRepository;
+
+@Service
+public class StudentService {
+
+	@Autowired
+	StudentRepository studentrepository;
+
+	public List<Student> getAllStudents() {
+		List<Student> employeeList = studentrepository.findAll();
+
+		if (employeeList.size() > 0) {
+			return employeeList;
+		} else {
+			return new ArrayList<Student>();
+		}
+	}
+
+	public Student getStudentById(Integer id) throws ResourceNotFoundException {
+		java.util.Optional<Student> student = studentrepository.findById(id);
+
+		if (student.isPresent()) {
+			return student.get();
+		} else {
+			throw new ResourceNotFoundException("No Student record exist for given id");
+		}
+	}
+
+	public Student createOrUpdateStudent(Student student) throws ResourceNotFoundException {
+		java.util.Optional<Student> studentRecord = studentrepository.findById(student.getId());
+
+		if (studentRecord.isPresent()) {
+			Student newStudent = studentRecord.get();
+			newStudent.setEmail(student.getEmail());
+			newStudent.setFirstName(student.getFirstName());
+			newStudent.setLastName(student.getLastName());
+
+			newStudent = studentrepository.save(newStudent);
+
+			return newStudent;
+		} else {
+			student = studentrepository.save(student);
+
+			return student;
+		}
+	}
+
+	public void deleteEmployeeById(Integer id) throws ResourceNotFoundException {
+		java.util.Optional<Student> student = studentrepository.findById(id);
+
+		if (student.isPresent()) {
+			studentrepository.deleteById(id);
+		} else {
+			throw new ResourceNotFoundException("No student record exist for given id");
+		}
+	}
+}

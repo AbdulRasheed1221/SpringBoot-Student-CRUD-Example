@@ -1,0 +1,93 @@
+package com.wipro.Application.controller;
+
+import java.net.http.HttpHeaders;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.wipro.Application.exception.ResourceNotFoundException;
+import com.wipro.Application.model.Student;
+import com.wipro.Application.repository.StudentRepository;
+import com.wipro.Application.service.StudentService;
+
+
+@RestController
+@RequestMapping("/api/v1")
+public class StudentController {
+	
+	@Autowired
+    StudentService service;
+ 
+	
+	// get all students
+		//end point : http://localhost:8080/api/v1/student
+	 @GetMapping("/students")
+    public ResponseEntity<List<Student>> getAllStudentsNew() {
+        List<Student> list = service.getAllStudents();
+ 
+        return new ResponseEntity<List<Student>>(list, HttpStatus.OK);
+    }
+	 
+    
+    //get student by Id
+    //http://localhost:8080/api/v1/students/1
+    @GetMapping("/student/{id}")
+    public ResponseEntity <Student> getStudentById(
+        @PathVariable(value = "id") Integer studentid) throws ResourceNotFoundException {
+    	Student student = service.getStudentById(studentid);
+        return ResponseEntity.ok().body(student);
+    }
+    
+    //create student 
+    //http://localhost:8080/api/v1/student
+    @PostMapping("/student")
+    public Student createStudent(@Valid @RequestBody Student student) throws ResourceNotFoundException {
+        return service.createOrUpdateStudent(student);
+    }
+
+    //updating student details based on id
+    //http://localhost:8080/api/v1/student/1
+    @PutMapping("/student/{id}")
+    public ResponseEntity <Student> updateStudent(
+        @PathVariable(value = "id") Integer studentid,
+        @Valid @RequestBody Student studentdetails) throws ResourceNotFoundException {
+        Student student = repository.findById(studentid)
+            .orElseThrow(() -> new ResourceNotFoundException("student not found :: " + studentid));
+        student.setFirstName(studentdetails.getFirstName());
+        student.setLastName(studentdetails.getLastName());
+        student.setEmail(studentdetails.getEmail());
+        student.setDept(studentdetails.getDept());
+        
+        final Student updatedStudent = repository.save(student);
+        return ResponseEntity.ok(updatedStudent);
+    }
+
+    //delete the student based on id
+    //endpoint: http://localhost:8080/api/v1/student/2
+    @DeleteMapping("/student/{id}")
+    public Map < String, Boolean > deleteStudent(
+        @PathVariable(value = "id") Integer studentId) throws ResourceNotFoundException {
+        Student student = repository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("student not found :: " + studentId));
+
+        repository.delete(student);
+        Map < String, Boolean > response = new HashMap <> ();
+        response.put("deleted", Boolean.TRUE);
+        return response;
+    }
+}
+
